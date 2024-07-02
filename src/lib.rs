@@ -36,6 +36,7 @@ mod fs;
 mod fuse;
 mod hashes;
 mod logging;
+mod lua;
 mod menus;
 mod offsets;
 mod replacement;
@@ -43,7 +44,6 @@ mod resource;
 #[cfg(feature = "online")]
 mod update;
 mod utils;
-mod lua;
 
 use fs::GlobalFilesystem;
 use smash_arc::{Hash40, Region};
@@ -366,9 +366,7 @@ unsafe fn online_slot_spoof(ctx: &InlineCtx) {
 }
 
 pub fn is_online() -> bool {
-    unsafe {
-        *(offsets::offset_to_addr(offsets::is_online()) as *const bool)
-    }
+    unsafe { *(offsets::offset_to_addr(offsets::is_online()) as *const bool) }
 }
 
 // Thanks to blujay for these two function hooks
@@ -507,7 +505,14 @@ pub fn main() {
         })
         .unwrap();
 
-    skyline::install_hooks!(initial_loading, change_version_string, show_eshop, online_slot_spoof, change_fighter_color_l, change_fighter_color_r);
+    skyline::install_hooks!(
+        initial_loading,
+        change_version_string,
+        show_eshop,
+        online_slot_spoof,
+        change_fighter_color_l,
+        change_fighter_color_r
+    );
 
     // If we skip the title scene, we obviously skip the opening cutscene with it. Well, actually not necessarily but in this case we do.
     if config::skip_title_scene() {

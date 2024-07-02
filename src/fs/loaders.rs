@@ -147,12 +147,14 @@ impl ApiLoadType {
                 let patches = if let Some(patches) = ApiLoader::get_prc_patches_for_hash(local.smash_hash()?) {
                     patches
                 } else {
-                    return Err(ApiLoaderError::Other("[ARCropolis::loader] No patches found for file of type PRC!".to_string()));
+                    return Err(ApiLoaderError::Other(
+                        "[ARCropolis::loader] No patches found for file of type PRC!".to_string(),
+                    ));
                 };
 
                 let data = ApiLoader::handle_load_base_file(local)?;
-                let mut param_data = prcx::read_stream(&mut Cursor::new(data))
-                    .map_err(|_| ApiLoaderError::Other("Unable to parse param data!".to_string()))?;
+                let mut param_data =
+                    prcx::read_stream(&mut Cursor::new(data)).map_err(|_| ApiLoaderError::Other("Unable to parse param data!".to_string()))?;
 
                 for patch_path in patches.iter() {
                     let patch = if let Ok(patch) = prcx::open(patch_path) {
@@ -187,9 +189,15 @@ impl ApiLoadType {
                         Ok(xmsbt) => xmsbt,
                         Err(err) => {
                             match err {
-                                serde_xml_rs::Error::Syntax { source }  => {
+                                serde_xml_rs::Error::Syntax { source } => {
                                     let position = source.position();
-                                    warn!("XMSBT file `{}` could not be read due to the following syntax error at line {}, column {}: `{}`, skipping.", patch_path.display(), position.row + 1, position.column, source.msg())
+                                    warn!(
+                                        "XMSBT file `{}` could not be read due to the following syntax error at line {}, column {}: `{}`, skipping.",
+                                        patch_path.display(),
+                                        position.row + 1,
+                                        position.column,
+                                        source.msg()
+                                    )
                                 },
                                 _ => warn!("XMSBT file `{}` is malformed, skipping.", patch_path.display()),
                             }
@@ -227,12 +235,8 @@ impl ApiLoadType {
                                 let mut str_val: Vec<u16> = text.encode_utf16().collect();
                                 str_val.push(0);
 
-                                let slice_u8: &[u8] = unsafe {
-                                    std::slice::from_raw_parts(
-                                        str_val.as_ptr() as *const u8,
-                                        str_val.len() * std::mem::size_of::<u16>(),
-                                    )
-                                };
+                                let slice_u8: &[u8] =
+                                    unsafe { std::slice::from_raw_parts(str_val.as_ptr() as *const u8, str_val.len() * std::mem::size_of::<u16>()) };
 
                                 slice_u8
                             },
@@ -249,18 +253,12 @@ impl ApiLoadType {
                 for lbl in labels {
                     let text_data = match &lbl.1 {
                         TextType::Text(text) => {
-                            let mut str_val: Vec<u16> = text
-                                    .encode_utf16()
-                                    .collect();
+                            let mut str_val: Vec<u16> = text.encode_utf16().collect();
 
                             str_val.push(0);
 
-                            let slice_u8: &[u8] = unsafe {
-                                std::slice::from_raw_parts(
-                                    str_val.as_ptr() as *const u8,
-                                    str_val.len() * std::mem::size_of::<u16>(),
-                                )
-                            };
+                            let slice_u8: &[u8] =
+                                unsafe { std::slice::from_raw_parts(str_val.as_ptr() as *const u8, str_val.len() * std::mem::size_of::<u16>()) };
 
                             slice_u8
                         },
@@ -292,7 +290,11 @@ impl ApiLoadType {
                 //     and itself into the HashMap
                 //     ~ looping through the patches, and then applying them to the HashMap
                 //     ~ setting the base file's AudioFile vec to the values of the HashMap
-                let mut known_audiofiles: HashMap<String, AudioFile> = original_file.files.iter().map(|audio_file| (audio_file.name.clone(), audio_file.clone())).collect();
+                let mut known_audiofiles: HashMap<String, AudioFile> = original_file
+                    .files
+                    .iter()
+                    .map(|audio_file| (audio_file.name.clone(), audio_file.clone()))
+                    .collect();
 
                 // Iterate through the patches
                 for patch_path in patches.iter() {
@@ -307,8 +309,7 @@ impl ApiLoadType {
                             // If it does, set the already made AudioFile's data to the modified one/
                             println!("Found {}! Patching...", &audio_file.name);
                             known_audiofiles.get_mut(&audio_file.name).unwrap().data = audio_file.data.clone();
-                        }
-                        else {
+                        } else {
                             // If it doesn't, insert it into the known_audiofiles HashMap
                             println!("Not found {}! Adding...", &audio_file.name);
                             audio_file.id = (known_audiofiles.len() + 1) as u32;
@@ -333,13 +334,14 @@ impl ApiLoadType {
 
                 // Return the length of the contents and the contents
                 Ok((contents.len(), contents))
-
             },
             ApiLoadType::MotionlistPatch => {
                 let patches = if let Some(patches) = ApiLoader::get_motionlist_patches_for_hash(local.smash_hash()?) {
                     patches
                 } else {
-                    return Err(ApiLoaderError::Other("[ARCropolis::loader] No patches found for files motion_list.bin!".to_string()));
+                    return Err(ApiLoaderError::Other(
+                        "[ARCropolis::loader] No patches found for files motion_list.bin!".to_string(),
+                    ));
                 };
 
                 let mut yml_patches = Vec::new();
@@ -374,7 +376,10 @@ impl ApiLoadType {
                     }
 
                     if full_patches > 1 {
-                        println!("[ARCropolis::loader] Multiple motion_list.yml files found for {}.", local.to_str().unwrap());
+                        println!(
+                            "[ARCropolis::loader] Multiple motion_list.yml files found for {}.",
+                            local.to_str().unwrap()
+                        );
                         println!("                     The last applied .yml file will be used.");
                     }
                 }
@@ -385,8 +390,7 @@ impl ApiLoadType {
                         File::open(patch_path)?.read_to_string(&mut contents)?;
                         if let Some(diff) = from_str(&contents)? {
                             motion_list.apply(&diff);
-                        }
-                        else {
+                        } else {
                             return Err(ApiLoaderError::Other("This isn't a motion list patch file!".to_string()));
                         }
                     }
@@ -402,7 +406,9 @@ impl ApiLoadType {
                 let patches = if let Some(patches) = ApiLoader::get_bgm_property_patches_for_hash(local.smash_hash()?) {
                     patches
                 } else {
-                    return Err(ApiLoaderError::Other("[ARCropolis::loader] No patches found for file bgm_property.bin!".to_string()));
+                    return Err(ApiLoaderError::Other(
+                        "[ARCropolis::loader] No patches found for file bgm_property.bin!".to_string(),
+                    ));
                 };
 
                 let data = ApiLoader::handle_load_base_file(local)?;
@@ -459,7 +465,7 @@ impl ApiLoadType {
                 Ok((file_size, vec))
             },
             ApiLoadType::Stream => Err(ApiLoaderError::InvalidCb),
-            _ => Err(ApiLoaderError::Other("Unimplemented ApiLoadType!".to_string()))
+            _ => Err(ApiLoaderError::Other("Unimplemented ApiLoadType!".to_string())),
         }
     }
 }

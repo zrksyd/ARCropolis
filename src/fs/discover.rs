@@ -103,42 +103,32 @@ pub fn perform_discovery() -> LaunchPad<StandardLoader> {
         is_root || is_dot || is_out_of_region
     };
 
-    let collect = |x: &Path| {
-        match x.file_name() {
-            Some(name) if let Some(name) = name.to_str() => {
-                static RESERVED_NAMES: &[&str] = &[
-                    "config.json",
-                    "plugin.nro",
-                    "bgm_property.bin"
-                ];
-                static PATCH_EXTENSIONS: &[&str] = &[
-                    "prcx",
-                    "prcxml",
-                    "stdatx",
-                    "stdatxml",
-                    "stprmx",
-                    "stprmxml",
-
-                    "xmsbt",
-
-                    "patch3audio",
-
-                    "motdiff",
-
-                    "yml"
-                ];
-                RESERVED_NAMES.contains(&name) || {
-                    let is_out_of_region = if let Some(index) = name.find('+') {
-                        let (_, end) = name.split_at(index + 1);
-                        !end.starts_with(&config::region().to_string())
-                    } else {
-                        false
-                    };
-                    PATCH_EXTENSIONS.iter().any(|x| name.ends_with(x)) && !is_out_of_region
-                }
-            },
-            _ => false
-        }
+    let collect = |x: &Path| match x.file_name() {
+        Some(name) if let Some(name) = name.to_str() => {
+            static RESERVED_NAMES: &[&str] = &["config.json", "plugin.nro", "bgm_property.bin"];
+            static PATCH_EXTENSIONS: &[&str] = &[
+                "prcx",
+                "prcxml",
+                "stdatx",
+                "stdatxml",
+                "stprmx",
+                "stprmxml",
+                "xmsbt",
+                "patch3audio",
+                "motdiff",
+                "yml",
+            ];
+            RESERVED_NAMES.contains(&name) || {
+                let is_out_of_region = if let Some(index) = name.find('+') {
+                    let (_, end) = name.split_at(index + 1);
+                    !end.starts_with(&config::region().to_string())
+                } else {
+                    false
+                };
+                PATCH_EXTENSIONS.iter().any(|x| name.ends_with(x)) && !is_out_of_region
+            }
+        },
+        _ => false,
     };
 
     let mut launchpad = LaunchPad::new(StandardLoader, ConflictHandler::NoRoot);

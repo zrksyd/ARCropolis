@@ -150,7 +150,8 @@ pub mod save {
     }
 
     pub fn get_system_region_from_language_id(language: SaveLanguageId) -> Region {
-        let system_locale_id = unsafe { *(skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as *const u8).add(crate::offsets::system_locale_id()) };
+        let system_locale_id =
+            unsafe { *(skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as *const u8).add(crate::offsets::system_locale_id()) };
 
         // let system_region_map = unsafe {
         //     std::slice::from_raw_parts(

@@ -661,8 +661,12 @@ impl GlobalFilesystem {
     pub fn set_incoming(&mut self, hash: Option<Hash40>) {
         match self {
             Self::Initialized(fs) => fs.set_incoming(hash),
-            _ if let Some(hash) = hash => error!("Cannot set the incoming load to '{}' ({:#x}) because the filesystem is not initialized!", hashes::find(hash), hash.0),
-            _ => error!("Cannot null out the incoming load because the filesystem is not initialized!")
+            _ if let Some(hash) = hash => error!(
+                "Cannot set the incoming load to '{}' ({:#x}) because the filesystem is not initialized!",
+                hashes::find(hash),
+                hash.0
+            ),
+            _ => error!("Cannot null out the incoming load because the filesystem is not initialized!"),
         }
     }
 

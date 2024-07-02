@@ -1,4 +1,4 @@
-use crate::lua::lua::{lua_state, luaL_Reg_container, luaL_Reg_from_api};
+use crate::lua::lua::{luaL_Reg_container, luaL_Reg_from_api, lua_state};
 use std::ffi::CString;
 
 #[no_mangle]
@@ -9,20 +9,21 @@ pub extern "C" fn arcorp_add_lua_menu_manager(name: *mut u8, reg_vec_ptr: *mut l
             Ok(s) => {
                 let name = s.to_string();
                 let registry = Vec::from_raw_parts(reg_vec_ptr, reg_vec_size, reg_vec_cap);
-                
-                let functions = registry.iter().map(|x| {
-                    luaL_Reg_container {
+
+                let functions = registry
+                    .iter()
+                    .map(|x| luaL_Reg_container {
                         name: CString::from_raw(x.name).to_str().unwrap().to_string(),
-                        func: x.func
-                    }
-                }).collect::<Vec<luaL_Reg_container>>();
+                        func: x.func,
+                    })
+                    .collect::<Vec<luaL_Reg_container>>();
 
                 crate::lua::add_lua_menu_manager(name, functions)
             },
             Err(err) => {
                 error!("arcorp_add_lua_menu_manager -> Error when adding manager! Reason: {:?}", err);
                 false
-            }
+            },
         }
     }
 }
@@ -35,19 +36,18 @@ pub extern "C" fn arcorp_add_lua_ingame_manager(name: *mut u8, reg_vec_ptr: *mut
             Ok(s) => {
                 let name = s.to_string();
                 let registry = Vec::from_raw_parts(reg_vec_ptr, reg_vec_size, reg_vec_cap);
-                
-                let functions = registry.iter().map(|x| {
-                    luaL_Reg_container {
+
+                let functions = registry
+                    .iter()
+                    .map(|x| luaL_Reg_container {
                         name: CString::from_raw(x.name).to_str().unwrap().to_string(),
-                        func: x.func
-                    }
-                }).collect::<Vec<luaL_Reg_container>>();
+                        func: x.func,
+                    })
+                    .collect::<Vec<luaL_Reg_container>>();
 
                 crate::lua::add_lua_ingame_manager(name, functions)
             },
-            Err(err) => {
-                false
-            }
+            Err(err) => false,
         }
     }
 }
@@ -97,5 +97,7 @@ pub extern "C" fn arcrop_lua_state_push_nil(lua_state: &mut lua_state) {
 #[no_mangle]
 pub extern "C" fn arcrop_lua_state_push_string(lua_state: &mut lua_state, str: *mut u8) {
     debug!("arcrop_lua_state_push_string -> Function called");
-    unsafe { lua_state.push_string(CString::from_raw(str).to_str().expect("Failed to get string from str pointer!")); }
+    unsafe {
+        lua_state.push_string(CString::from_raw(str).to_str().expect("Failed to get string from str pointer!"));
+    }
 }

@@ -1,7 +1,7 @@
 use std::{
     alloc::Layout,
     ops::{Index, IndexMut, Range},
-    ptr::{NonNull, null},
+    ptr::{null, NonNull},
 };
 
 #[derive(Debug)]

@@ -1,4 +1,11 @@
-use std::{cmp::Ordering, fmt, io::{self, Seek, Read}, mem::MaybeUninit, ops::Deref, path::Path};
+use std::{
+    cmp::Ordering,
+    fmt,
+    io::{self, Read, Seek},
+    mem::MaybeUninit,
+    ops::Deref,
+    path::Path,
+};
 
 use nn::ro::{self, Module, NrrHeader, RegistrationInfo};
 use once_cell::sync::Lazy;
@@ -65,7 +72,7 @@ pub struct NrrBuilder {
     hashes: Vec<Sha256Hash>,
 }
 
-static ORIGINAL_GAME_NRO_HASHES: Lazy<Vec<Sha256Hash>> = Lazy::new(|| { 
+static ORIGINAL_GAME_NRO_HASHES: Lazy<Vec<Sha256Hash>> = Lazy::new(|| {
     let mut out = Vec::new();
     let read_dir = std::fs::read_dir("rom:/.nrr/").unwrap();
     for entry in read_dir {
@@ -83,7 +90,7 @@ static ORIGINAL_GAME_NRO_HASHES: Lazy<Vec<Sha256Hash>> = Lazy::new(|| {
                 let mut num_hashes_bytes = [0u8; 4];
                 file.read_exact(&mut num_hashes_bytes).unwrap();
                 let num_hashes = u32::from_le_bytes(num_hashes_bytes);
-                
+
                 // Seek to hashes_offset and read the module hashes into nrr_hashes.
                 file.seek(io::SeekFrom::Start(hashes_offset as u64)).unwrap();
                 let mut nrr_hashes = Vec::with_capacity(num_hashes as usize);
@@ -99,8 +106,7 @@ static ORIGINAL_GAME_NRO_HASHES: Lazy<Vec<Sha256Hash>> = Lazy::new(|| {
         }
     }
     out
-    }
-);
+});
 
 const NRR_SIZE: usize = std::mem::size_of::<NrrHeader>();
 

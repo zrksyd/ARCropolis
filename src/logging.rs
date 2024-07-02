@@ -6,17 +6,20 @@ use std::{
     time::SystemTime,
 };
 
+use crate::config;
 use log::{LevelFilter, Metadata, Record, SetLoggerError};
 use once_cell::sync::Lazy;
 use parking_lot::Mutex;
 use skyline::nn::time;
-use crate::config;
 
 /// Since we can't rely on most time based libraries, this is a seconds -> date/time string based on the `chrono` crates implementation
 fn get_time_string() -> String {
     let datetime: time::CalendarTime = time::get_calendar_time();
 
-    format!("{:04}-{:02}-{:02}_{:02}-{:02}-{:02}", datetime.year, datetime.month, datetime.day, datetime.hour, datetime.minute, datetime.second)
+    format!(
+        "{:04}-{:02}-{:02}_{:02}-{:02}-{:02}",
+        datetime.year, datetime.month, datetime.day, datetime.hour, datetime.minute, datetime.second
+    )
 }
 
 static LOG_PATH: &str = "sd:/ultimate/arcropolis/logs";
